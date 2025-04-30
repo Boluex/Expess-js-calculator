@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-js
+  namespace: node-js
+  labels:
+    app: node-calc-js
+spec:   
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-calc-js
+  template:
+    metadata:
+      labels:
+        app: node-calc-js
+    spec:
+      containers:
+        - name: node-calc-js
+          image: boluex/expess-js-calculator:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-js
+  namespace: node-js
+spec:
+  selector:
+    app: node-calc-js
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: NodePort

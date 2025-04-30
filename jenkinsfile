@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    stages {
+        stage('SCM') {
+            steps {
+                git changelog: false, poll: false, url: 'https://github.com/Boluex/Expess-js-calculator.git'
+            }
+        }
+        
+        stage('Docker build and push') {
+            steps {
+                script{
+                    withDockerRegistry(credentialsId: 'dockerhub') {
+                        sh "docker build -t boluex/expess-js-calculator:${BUILD_NUMBER} ."
+                        sh "docker push boluex/expess-js-calculator:${BUILD_NUMBER}"
+                      }
+                }
+            }
+        }
+        stage('Edit and update the deploy.yaml image') {
+            steps {
+                script{
+                    sh "sed -i 's/:latest/${BUILD_NUMBER}/g' deploy.txt"
+                    sh "echo deploy.txt >> ./manifests/deploy.yaml"  
+                    sh "sed -i 's/${BUILD_NUMBER}/latest/g' deploy.txt"   
+                               }
+            }
+        }
+    }
+}
